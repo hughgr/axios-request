@@ -960,7 +960,6 @@ var _axios2 = _interopRequireDefault(_axios);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // import 'babel-polyfill';
-window.Promise = null;
 __webpack_require__(9);
 
 
