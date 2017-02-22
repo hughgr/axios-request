@@ -1,3 +1,3 @@
-import {normalRequest} from './index.js';
+import {normalRequest} from './';
 
 normalRequest.get('/self/bitwise.html');

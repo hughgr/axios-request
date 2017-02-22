@@ -1,4 +1,14 @@
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define("axios-request", [], factory);
+	else if(typeof exports === 'object')
+		exports["axios-request"] = factory();
+	else
+		root["axios-request"] = factory();
+})(this, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -3071,4 +3081,5 @@ module.exports = g;
 
 /***/ })
 /******/ ]);
+});
 //# sourceMappingURL=index.js.map
