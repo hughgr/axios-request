@@ -1,0 +1,31 @@
+{
+  "name": "axios-request",
+  "version": "1.0.0",
+  "description": "tangyi-axios request",
+  "main": "build/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "cross-env NODE_ENV=production webpack --config webpack.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/hughgr/axios-request.git"
+  },
+  "author": "vvsage",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hughgr/axios-request/issues"
+  },
+  "homepage": "https://github.com/hughgr/axios-request#readme",
+  "dependencies": {
+    "axios": "^0.15.3",
+    "babel-polyfill": "^6.23.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.23.1",
+    "babel-loader": "^6.3.2",
+    "babel-preset-es2015": "^6.22.0",
+    "cross-env": "^3.1.4",
+    "webpack": "^2.2.1"
+  }
+}
