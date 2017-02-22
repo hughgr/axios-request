@@ -19,7 +19,8 @@
   "homepage": "https://github.com/hughgr/axios-request#readme",
   "dependencies": {
     "axios": "^0.15.3",
-    "babel-polyfill": "^6.23.0"
+    "babel-polyfill": "^6.23.0",
+    "es6-promise": "^4.0.5"
   },
   "devDependencies": {
     "babel-core": "^6.23.1",

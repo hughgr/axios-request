@@ -1,9 +1,12 @@
 var path = require('path');
 
 var baseConfig = {
-  entry: './src/index.js',
+  entry: {
+    index: './src/index',
+    test: './src/test'
+  },
   output: {
-    filename: 'index.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, 'build')
   },
   module: {
@@ -14,7 +17,8 @@ var baseConfig = {
         loader: 'babel-loader'
       }
     ]
-  }
+  },
+  devtool: 'source-map'
 }
 
 module.exports = baseConfig;

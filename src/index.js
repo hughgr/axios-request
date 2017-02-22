@@ -1,11 +1,14 @@
-import 'babel-polyfill';
+// import 'babel-polyfill';
+window.Promise = null;
+require('es6-promise/auto');
 import axios from 'axios';
 
-function factory ({
-  toast = _nope
-}) {
-  var config = arguments[0];
-  if (config.toStirng() === '[object Object]') {
+function factory (config = {}) {
+  if (config.toString() === '[object Object]') {
+    var defaluts = {
+      toast: _nope
+    }
+    _simpleMix(config, defaluts); 
     var ins = axios.create(config); 
     ins.toast =  config.toast;
     return _init(ins);
@@ -15,16 +18,28 @@ function factory ({
   }
 }
 function _nope () {}
+function _simpleMix(dest, src) {
+  for (var key in src) {
+    //only handle object 
+    if (src[key].constructor === Object) {
+      dest[key] = {};
+      _simpleMix(dest[key], src[key]);
+    } else {
+      dest[key] = src[key];
+    }
+  }
+  return dest;
+}
 function _init (http) {
   return _buildInterceptor(http);
 }
 function _buildInterceptor (http) {
-  http.interceptors.request.use((
-    config = {
+  http.interceptors.request.use((config = {}) => {
+    var defaluts = {
       params: {},
-      hideLoading: false,
+      hideLoading: false
     }
-  ) => {
+    _simpleMix(config, defaluts);
     config.params.ts = new Date().getTime();
     if (config.hideLoading) http.toast('xhrShow');
     return config;
@@ -42,7 +57,8 @@ function _buildInterceptor (http) {
     }
     return Promise.resolve(res.data, res);
   }, error => {
-    http.toast('异常');
+    http.toast('error');
+    console.error(error);
     return Promise.reject(error);
   });
   return http;
@@ -56,4 +72,4 @@ var normalRequest = factory({
   }
 });
 
-export default {factory, normalRequest};
+export {factory, normalRequest};
