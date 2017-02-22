@@ -1,6 +1,6 @@
 {
   "name": "axios-request",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "tangyi-axios request",
   "main": "build/index.js",
   "scripts": {
