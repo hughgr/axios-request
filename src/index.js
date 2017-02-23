@@ -1,13 +1,16 @@
 // import 'babel-polyfill';
 require('es6-promise/auto');
 import axios from 'axios';
-
+import util from './helper.js'
+/*
+ * factory method to create http request client 
+*/
 function factory (config = {}) {
   if (config.toString() === '[object Object]') {
     var defaluts = {
       toast: _nope
     }
-    _simpleMix(config, defaluts); 
+    config = util.simpleMix(defaluts, config); 
     var ins = axios.create(config); 
     ins.toast =  config.toast;
     return _init(ins);
@@ -16,22 +19,98 @@ function factory (config = {}) {
     return config.call(null, axios);
   }
 }
+
+/*
+ * empty function
+ */
 function _nope () {}
-function _simpleMix(dest, src) {
-  for (var key in src) {
-    //only handle object 
-    if (src[key].constructor === Object) {
-      dest[key] = {};
-      _simpleMix(dest[key], src[key]);
+
+function _init (http) {
+  return _transAxios(_buildInterceptor(http));
+}
+
+/**
+ * add & adapte some axios methods
+ */
+function _transAxios (http) {
+  var old = http.get;
+
+  http.cache = {};
+
+  //only handle the right param!
+  //use es5 so this refer to http
+  var _getCache = util.proxy(function (namespace, key) {
+    if (namespace && key) {
+      try {
+        return this.cache[namespace][key]; 
+      } catch (e) {
+        console.info(e);
+        return null;
+      }
     } else {
-      dest[key] = src[key];
+      return this.cache[key];
+    }
+  }, http)
+
+  //only handle the right param!
+  var _setCache = util.proxy(function (namespace, key, data) {
+    if (namespace && key) {
+      this.cache[namespace] = this.cache[namespace] || {};
+      return this.cache[namespace][key] = data;
+    } else {
+      return this.cache[key] = data;
+    }
+  }, http)
+
+  /**
+   * trans get method
+  */
+  http.get = (url = '', data = {}, config = {}) => {
+    if (data) {
+      config.params = data;
+    }
+    return old(url, config);
+  }
+
+  /**
+   * add cacheGet method
+   * use http.cache as cache pool
+   */
+  http.cacheGet = (url, data ,config = {}) => {
+    var key = data ? url + util.stringify(data) : url;
+    var defaluts = {
+      forceUpdate: false,
+      cacheNamespace: ''
+    } 
+    config = util.simpleMix(defaluts, config);
+    var cacheObj = _getCache(config.cacheNamespace, key);
+    if (cacheObj && !config.forceUpdate) {
+      return new Promise((resolve, reject) => {
+        resolve(cacheObj);
+      });
+    } else {
+      return http.get(url, data, config).then(data => {
+        return _setCache(config.cacheNamespace, key, data);
+     });
     }
   }
-  return dest;
+  /**
+   * strongCacheGet use localstorage as cache pool
+   */
+  http.strongCacheGet = (url, data, config) => {
+    var key = data ? url + util.stringify(data) : url;
+    return http.cacheGet(url, data, config).then(data => {
+      util.cache(key, data);
+      return data;
+    });
+  }
+
+  return http;
 }
-function _init (http) {
-  return _buildInterceptor(http);
-}
+
+/**
+ * build custom interceptor, include request & response
+ */
 function _buildInterceptor (http) {
   http.customInterceptors = {
     request: _nope,
@@ -42,7 +121,7 @@ function _buildInterceptor (http) {
       params: {},
       hideLoading: false
     }
-    _simpleMix(config, defaluts);
+    config = util.simpleMix(defaluts, config);
     config.params.ts = new Date().getTime();
     if (config.hideLoading) http.toast('xhrShow');
     return config;
@@ -58,16 +137,19 @@ function _buildInterceptor (http) {
         !config.hideLoading && !$.toastIsRuning && http.toast('xhrHide');
       }, 500);
     }
-    return Promise.resolve(res.data, res);
+    return Promise.resolve(res.data);
   }, error => {
     console.error(error);
     var msg = error.response.data.message;
     msg ? http.toast(msg): http.toast('服务器异常');
-    return Promise.reject(error.response, error);
-  });
+    return Promise.reject(error.response);
+  })
   return http;
 }
 
+/**
+ * finally, create normalRequest
+ */
 var normalRequest = factory({
   baseURL: '/',
   timeout: 2000,

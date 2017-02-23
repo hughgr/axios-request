@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 31);
+/******/ 	return __webpack_require__(__webpack_require__.s = 32);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -390,7 +390,7 @@ module.exports = {
 /* WEBPACK VAR INJECTION */(function(process) {
 
 var utils = __webpack_require__(0);
-var normalizeHeaderName = __webpack_require__(25);
+var normalizeHeaderName = __webpack_require__(26);
 
 var PROTECTION_PREFIX = /^\)\]\}',?\n/;
 var DEFAULT_CONTENT_TYPE = {
@@ -677,12 +677,12 @@ process.umask = function() { return 0; };
 /* WEBPACK VAR INJECTION */(function(process) {
 
 var utils = __webpack_require__(0);
-var settle = __webpack_require__(17);
-var buildURL = __webpack_require__(20);
-var parseHeaders = __webpack_require__(26);
-var isURLSameOrigin = __webpack_require__(24);
+var settle = __webpack_require__(18);
+var buildURL = __webpack_require__(21);
+var parseHeaders = __webpack_require__(27);
+var isURLSameOrigin = __webpack_require__(25);
 var createError = __webpack_require__(6);
-var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(19);
+var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(20);
 
 module.exports = function xhrAdapter(config) {
   return new Promise(function dispatchXhrRequest(resolve, reject) {
@@ -778,7 +778,7 @@ module.exports = function xhrAdapter(config) {
     // This is only done if running in a standard browser environment.
     // Specifically not if we're in a web worker, or react-native.
     if (utils.isStandardBrowserEnv()) {
-      var cookies = __webpack_require__(22);
+      var cookies = __webpack_require__(23);
 
       // Add xsrf header
       var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
@@ -899,7 +899,7 @@ module.exports = function isCancel(value) {
 "use strict";
 
 
-var enhanceError = __webpack_require__(16);
+var enhanceError = __webpack_require__(17);
 
 /**
  * Create an Error with the specified message, config, error code, and response.
@@ -938,21 +938,70 @@ module.exports = function bind(fn, thisArg) {
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(11);
+module.exports = __webpack_require__(12);
 
 /***/ }),
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-// This file can be required in Browserify and Node.js for automatic polyfill
-// To use it:  require('es6-promise/auto');
 
-module.exports = __webpack_require__(28).polyfill();
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var util = {
+  cache: function cache(key, value) {
+    try {
+      if (arguments.length === 2) {
+        return localStorage.setItem(key, JSON.stringify(value));
+      } else {
+        return JSON.parse(localStorage.getItem(key));
+      }
+    } catch (e) {
+      console.error('do not support JSON.parse');
+    }
+  },
+  simpleMix: function simpleMix(dest, src) {
+    for (var key in src) {
+      //only handle object 
+      if (src[key].constructor === Object) {
+        dest[key] = {};
+        this.simpleMix(dest[key], src[key]);
+      } else {
+        dest[key] = src[key];
+      }
+    }
+    return dest;
+  },
+  proxy: function proxy(callback, context) {
+    return function () {
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return callback.apply(context, args);
+    };
+  },
+  stringify: function stringify(obj) {
+    return JSON.stringify(obj);
+  }
+};
+exports.default = util;
 
 /***/ }),
 /* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+// This file can be required in Browserify and Node.js for automatic polyfill
+// To use it:  require('es6-promise/auto');
+
+module.exports = __webpack_require__(29).polyfill();
+
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -967,12 +1016,18 @@ var _axios = __webpack_require__(8);
 
 var _axios2 = _interopRequireDefault(_axios);
 
+var _helper = __webpack_require__(9);
+
+var _helper2 = _interopRequireDefault(_helper);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // import 'babel-polyfill';
-__webpack_require__(9);
+__webpack_require__(10);
 
-
+/*
+ * factory method to create http request client 
+*/
 function factory() {
   var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
@@ -980,7 +1035,7 @@ function factory() {
     var defaluts = {
       toast: _nope
     };
-    _simpleMix(config, defaluts);
+    config = _helper2.default.simpleMix(defaluts, config);
     var ins = _axios2.default.create(config);
     ins.toast = config.toast;
     return _init(ins);
@@ -988,22 +1043,104 @@ function factory() {
     return config.call(null, _axios2.default);
   }
 }
+
+/*
+ * empty function
+ */
 function _nope() {}
-function _simpleMix(dest, src) {
-  for (var key in src) {
-    //only handle object 
-    if (src[key].constructor === Object) {
-      dest[key] = {};
-      _simpleMix(dest[key], src[key]);
-    } else {
-      dest[key] = src[key];
-    }
-  }
-  return dest;
-}
+
 function _init(http) {
-  return _buildInterceptor(http);
+  return _transAxios(_buildInterceptor(http));
 }
+
+/**
+ * add & adapte some axios methods
+ */
+function _transAxios(http) {
+  var old = http.get;
+
+  http.cache = {};
+
+  //only handle the right param!
+  //use es5 so this refer to http
+  var _getCache = _helper2.default.proxy(function (namespace, key) {
+    if (namespace && key) {
+      try {
+        return this.cache[namespace][key];
+      } catch (e) {
+        console.info(e);
+        return null;
+      }
+    } else {
+      return this.cache[key];
+    }
+  }, http);
+
+  //only handle the right param!
+  var _setCache = _helper2.default.proxy(function (namespace, key, data) {
+    if (namespace && key) {
+      this.cache[namespace] = this.cache[namespace] || {};
+      return this.cache[namespace][key] = data;
+    } else {
+      return this.cache[key] = data;
+    }
+  }, http);
+
+  /**
+   * trans get method
+  */
+  http.get = function () {
+    var url = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+    var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var config = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+    if (data) {
+      config.params = data;
+    }
+    return old(url, config);
+  };
+
+  /**
+   * add cacheGet method
+   * use http.cache as cache pool
+   */
+  http.cacheGet = function (url, data) {
+    var config = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+    var key = data ? url + _helper2.default.stringify(data) : url;
+    var defaluts = {
+      forceUpdate: false,
+      cacheNamespace: ''
+    };
+    config = _helper2.default.simpleMix(defaluts, config);
+    var cacheObj = _getCache(config.cacheNamespace, key);
+    if (cacheObj && !config.forceUpdate) {
+      return new Promise(function (resolve, reject) {
+        resolve(cacheObj);
+      });
+    } else {
+      return http.get(url, data, config).then(function (data) {
+        return _setCache(config.cacheNamespace, key, data);
+      });
+    }
+  };
+  /**
+   * strongCacheGet use localstorage as cache pool
+   */
+  http.strongCacheGet = function (url, data, config) {
+    var key = data ? url + _helper2.default.stringify(data) : url;
+    return http.cacheGet(url, data, config).then(function (data) {
+      _helper2.default.cache(key, data);
+      return data;
+    });
+  };
+
+  return http;
+}
+
+/**
+ * build custom interceptor, include request & response
+ */
 function _buildInterceptor(http) {
   http.customInterceptors = {
     request: _nope,
@@ -1016,7 +1153,7 @@ function _buildInterceptor(http) {
       params: {},
       hideLoading: false
     };
-    _simpleMix(config, defaluts);
+    config = _helper2.default.simpleMix(defaluts, config);
     config.params.ts = new Date().getTime();
     if (config.hideLoading) http.toast('xhrShow');
     return config;
@@ -1032,16 +1169,19 @@ function _buildInterceptor(http) {
         !config.hideLoading && !$.toastIsRuning && http.toast('xhrHide');
       }, 500);
     }
-    return Promise.resolve(res.data, res);
+    return Promise.resolve(res.data);
   }, function (error) {
     console.error(error);
     var msg = error.response.data.message;
     msg ? http.toast(msg) : http.toast('服务器异常');
-    return Promise.reject(error.response, error);
+    return Promise.reject(error.response);
   });
   return http;
 }
 
+/**
+ * finally, create normalRequest
+ */
 var normalRequest = factory({
   baseURL: '/',
   timeout: 2000,
@@ -1054,7 +1194,7 @@ exports.factory = factory;
 exports.normalRequest = normalRequest;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1062,7 +1202,7 @@ exports.normalRequest = normalRequest;
 
 var utils = __webpack_require__(0);
 var bind = __webpack_require__(7);
-var Axios = __webpack_require__(13);
+var Axios = __webpack_require__(14);
 var defaults = __webpack_require__(1);
 
 /**
@@ -1097,14 +1237,14 @@ axios.create = function create(instanceConfig) {
 
 // Expose Cancel & CancelToken
 axios.Cancel = __webpack_require__(4);
-axios.CancelToken = __webpack_require__(12);
+axios.CancelToken = __webpack_require__(13);
 axios.isCancel = __webpack_require__(5);
 
 // Expose all/spread
 axios.all = function all(promises) {
   return Promise.all(promises);
 };
-axios.spread = __webpack_require__(27);
+axios.spread = __webpack_require__(28);
 
 module.exports = axios;
 
@@ -1113,7 +1253,7 @@ module.exports.default = axios;
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1177,7 +1317,7 @@ module.exports = CancelToken;
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1185,10 +1325,10 @@ module.exports = CancelToken;
 
 var defaults = __webpack_require__(1);
 var utils = __webpack_require__(0);
-var InterceptorManager = __webpack_require__(14);
-var dispatchRequest = __webpack_require__(15);
-var isAbsoluteURL = __webpack_require__(23);
-var combineURLs = __webpack_require__(21);
+var InterceptorManager = __webpack_require__(15);
+var dispatchRequest = __webpack_require__(16);
+var isAbsoluteURL = __webpack_require__(24);
+var combineURLs = __webpack_require__(22);
 
 /**
  * Create a new instance of Axios
@@ -1269,7 +1409,7 @@ module.exports = Axios;
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1328,14 +1468,14 @@ module.exports = InterceptorManager;
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var utils = __webpack_require__(0);
-var transformData = __webpack_require__(18);
+var transformData = __webpack_require__(19);
 var isCancel = __webpack_require__(5);
 var defaults = __webpack_require__(1);
 
@@ -1414,7 +1554,7 @@ module.exports = function dispatchRequest(config) {
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1440,7 +1580,7 @@ module.exports = function enhanceError(error, config, code, response) {
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1472,7 +1612,7 @@ module.exports = function settle(resolve, reject, response) {
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1499,7 +1639,7 @@ module.exports = function transformData(data, headers, fns) {
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1542,7 +1682,7 @@ module.exports = btoa;
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1617,7 +1757,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1636,7 +1776,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1696,7 +1836,7 @@ module.exports = (
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1717,7 +1857,7 @@ module.exports = function isAbsoluteURL(url) {
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1792,7 +1932,7 @@ module.exports = (
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1811,7 +1951,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1855,7 +1995,7 @@ module.exports = function parseHeaders(headers) {
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1889,7 +2029,7 @@ module.exports = function spread(callback) {
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(process, global) {var require;/*!
@@ -2028,7 +2168,7 @@ function flush() {
 function attemptVertx() {
   try {
     var r = require;
-    var vertx = __webpack_require__(30);
+    var vertx = __webpack_require__(31);
     vertxNext = vertx.runOnLoop || vertx.runOnContext;
     return useVertxTimer();
   } catch (e) {
@@ -3049,10 +3189,10 @@ return Promise;
 
 })));
 //# sourceMappingURL=es6-promise.map
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(29)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(30)))
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports) {
 
 var g;
@@ -3079,21 +3219,22 @@ module.exports = g;
 
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _ = __webpack_require__(10);
+var _ = __webpack_require__(11);
 
-_.normalRequest.get('/self/bitwise.html1').then(function (data, res) {
+window.R = _.normalRequest;
+_.normalRequest.cacheGet('/self/bitwise.html').then(function (data, res) {
   console.log(res);
 }).catch(function (error) {
   console.log(error.response);
