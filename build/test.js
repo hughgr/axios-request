@@ -1005,7 +1005,11 @@ function _init(http) {
   return _buildInterceptor(http);
 }
 function _buildInterceptor(http) {
-  http.interceptors.request.use(function () {
+  http.customInterceptors = {
+    request: _nope,
+    response: _nope
+  };
+  http.customInterceptors.request = http.interceptors.request.use(function () {
     var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     var defaluts = {
@@ -1018,21 +1022,22 @@ function _buildInterceptor(http) {
     return config;
   });
 
-  http.interceptors.response.use(function (res) {
+  http.customInterceptors.response = http.interceptors.response.use(function (res) {
     //耦合代码
     $.toastIsRuning = false;
     var config = res.config;
     if (!config.hideLoading) {
       var timer = setTimeout(function () {
-        //请求成功之后，toastIsRuning已经被置成false,如果500ms之后，toastIsRunning被置为了true，则说明toast又弹了出来，此时不应该执行
+        //请求成功之后，toastIsRuning已经被置成false,如果500ms之后，toastIsRunning被置为了true，则说明toast又弹了出来，此时不应该执行hide操作
         !config.hideLoading && !$.toastIsRuning && http.toast('xhrHide');
       }, 500);
     }
     return Promise.resolve(res.data, res);
   }, function (error) {
-    http.toast('error');
     console.error(error);
-    return Promise.reject(error);
+    var msg = error.response.data.message;
+    msg ? http.toast(msg) : http.toast('服务器异常');
+    return Promise.reject(error.response, error);
   });
   return http;
 }
@@ -3088,7 +3093,11 @@ module.exports = g;
 
 var _ = __webpack_require__(10);
 
-_.normalRequest.get('/self/bitwise.html');
+_.normalRequest.get('/self/bitwise.html1').then(function (data, res) {
+  console.log(res);
+}).catch(function (error) {
+  console.log(error.response);
+});
 
 /***/ })
 /******/ ]);
