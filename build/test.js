@@ -1057,7 +1057,10 @@ function _init(http) {
  * add & adapte some axios methods
  */
 function _transAxios(http) {
-  var old = http.get;
+  var _ref = [http.get, http.delete],
+      oldGet = _ref[0],
+      oldDelete = _ref[1];
+
 
   http.cache = {};
 
@@ -1097,7 +1100,21 @@ function _transAxios(http) {
     if (data) {
       config.params = data;
     }
-    return old(url, config);
+    return oldGet(url, config);
+  };
+
+  /**
+   * trans delete method
+  */
+  http.delete = function () {
+    var url = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+    var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var config = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+    if (data) {
+      config.params = data;
+    }
+    return oldDelete(url, config);
   };
 
   /**
@@ -1186,7 +1203,7 @@ var normalRequest = factory({
   baseURL: '/',
   timeout: 2000,
   headers: {
-    'Content-Type': 'application/json; charset=UTF-8'
+    "Content-type": "application/json; charset=UTF-8"
   }
 });
 
@@ -3234,7 +3251,7 @@ module.exports = g;
 var _ = __webpack_require__(11);
 
 window.R = _.normalRequest;
-_.normalRequest.cacheGet('/self/bitwise.html').then(function (data, res) {
+_.normalRequest.delete('/self/bitwise.html', '').then(function (data, res) {
   console.log(res);
 }).catch(function (error) {
   console.log(error.response);

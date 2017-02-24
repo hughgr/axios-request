@@ -33,7 +33,7 @@ function _init (http) {
  * add & adapte some axios methods
  */
 function _transAxios (http) {
-  var old = http.get;
+  var [oldGet, oldDelete] = [http.get, http.delete];
 
   http.cache = {};
 
@@ -69,7 +69,17 @@ function _transAxios (http) {
     if (data) {
       config.params = data;
     }
-    return old(url, config);
+    return oldGet(url, config);
+  }
+
+  /**
+   * trans delete method
+  */
+  http.delete = (url = '', data = {}, config = {}) => {
+    if (data) {
+      config.params = data;
+    }
+    return oldDelete(url, config);
   }
 
   /**
@@ -154,7 +164,7 @@ var normalRequest = factory({
   baseURL: '/',
   timeout: 2000,
   headers: {
-    'Content-Type':'application/json; charset=UTF-8'
+    "Content-type": "application/json; charset=UTF-8"
   }
 });
 
