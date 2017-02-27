@@ -22,6 +22,16 @@ var util = {
     }
     return dest;
   },
+  partMix (dest, src) {
+    //Do NOT support nested src 
+    for (var key in src) {
+      //0, false and other
+      if (!dest[key]) {
+        dest[key] = src[key];
+      }
+    }
+    return dest;
+  },
   proxy (callback, context) {
     return (...args) => {
       return callback.apply(context, args);

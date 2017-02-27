@@ -974,6 +974,16 @@ var util = {
     }
     return dest;
   },
+  partMix: function partMix(dest, src) {
+    //Do NOT support nested src 
+    for (var key in src) {
+      //0, false and other
+      if (!dest[key]) {
+        dest[key] = src[key];
+      }
+    }
+    return dest;
+  },
   proxy: function proxy(callback, context) {
     return function () {
       for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
@@ -1129,7 +1139,8 @@ function _transAxios(http) {
       forceUpdate: false,
       cacheNamespace: ''
     };
-    config = _helper2.default.simpleMix(defaluts, config);
+    //config = util.simpleMix(defaluts, config);
+    config = _helper2.default.partMix(config, defaluts);
     var cacheObj = _getCache(config.cacheNamespace, key);
     if (cacheObj && !config.forceUpdate) {
       return new Promise(function (resolve, reject) {
@@ -1170,7 +1181,8 @@ function _buildInterceptor(http) {
       params: {},
       hideLoading: false
     };
-    config = _helper2.default.simpleMix(defaluts, config);
+    //config = util.simpleMix(defaluts, config);
+    config = _helper2.default.partMix(config, defaluts);
     config.params.ts = new Date().getTime();
     if (config.hideLoading) http.toast('xhrShow');
     return config;

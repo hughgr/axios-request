@@ -92,7 +92,8 @@ function _transAxios (http) {
       forceUpdate: false,
       cacheNamespace: ''
     } 
-    config = util.simpleMix(defaluts, config);
+    //config = util.simpleMix(defaluts, config);
+    config = util.partMix(config, defaluts);
     var cacheObj = _getCache(config.cacheNamespace, key);
     if (cacheObj && !config.forceUpdate) {
       return new Promise((resolve, reject) => {
@@ -131,7 +132,8 @@ function _buildInterceptor (http) {
       params: {},
       hideLoading: false
     }
-    config = util.simpleMix(defaluts, config);
+    //config = util.simpleMix(defaluts, config);
+    config = util.partMix(config, defaluts);
     config.params.ts = new Date().getTime();
     if (config.hideLoading) http.toast('xhrShow');
     return config;
