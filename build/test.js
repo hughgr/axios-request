@@ -1184,7 +1184,7 @@ function _buildInterceptor(http) {
     //config = util.simpleMix(defaluts, config);
     config = _helper2.default.partMix(config, defaluts);
     config.params.ts = new Date().getTime();
-    if (config.hideLoading) http.toast('xhrShow');
+    if (!config.hideLoading) http.toast('xhrShow');
     return config;
   });
 

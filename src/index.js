@@ -135,7 +135,7 @@ function _buildInterceptor (http) {
     //config = util.simpleMix(defaluts, config);
     config = util.partMix(config, defaluts);
     config.params.ts = new Date().getTime();
-    if (config.hideLoading) http.toast('xhrShow');
+    if (!config.hideLoading) http.toast('xhrShow');
     return config;
   });
   
