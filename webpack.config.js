@@ -1,5 +1,5 @@
 var path = require('path');
-
+console.log(process.env.NODE_ENV);
 var baseConfig = {
   entry: {
     index: './src/index',

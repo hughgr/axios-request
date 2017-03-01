@@ -152,9 +152,13 @@ function _buildInterceptor (http) {
     return Promise.resolve(res.data);
   }, error => {
     console.error(error);
-    var msg = error.response.data.message;
-    msg ? http.toast(msg): http.toast('服务器异常');
-    return Promise.reject(error.response);
+    if (error.code === 'ECONNABORTED') {
+      http.toast('网络连接超时');
+    } else {
+      var msg = error.response.data.message;
+      msg ? http.toast(msg) : http.toast('服务器异常');
+    }
+    return Promise.reject(error);
   })
   return http;
 }
