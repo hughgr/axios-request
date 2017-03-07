@@ -39,6 +39,20 @@ var util = {
   },
   stringify (obj) {
     return JSON.stringify(obj);
+  },
+  safeGetData (data, path) {
+    var list = path.split('.');
+    var result = data;
+    while (list.length > 0) {
+      var key = list.shift();
+      if (result[key] !== undefined) {
+        result = result[key];
+      } else {
+        result = undefined;
+        return; 
+      }
+    }
+    return result;
   }
 }
 export default util;

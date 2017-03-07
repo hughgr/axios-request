@@ -1,27 +1,53 @@
 var path = require('path');
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
+var webpack = require('webpack');
 console.log(process.env.NODE_ENV);
 var baseConfig = {
   entry: {
+    test: './src/test',
     index: './src/index',
-    test: './src/test'
   },
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, 'build'),
     library: 'axios-request',
+    publicPath: '../build/',
     libraryTarget: 'umd',
     umdNamedDefine: true
   },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        loader: 'babel-loader'
+        use: [{
+          loader: 'babel-loader',
+          options: {
+            plugins: ['syntax-dynamic-import']
+          }
+        }]
+      },
+      {
+        test: /\.css$/,
+        use: ExtractTextPlugin.extract({
+          use: 'css-loader'
+        })
       }
     ]
   },
-  devtool: 'source-map'
+  devtool: 'source-map',
+  plugins: [
+    new ExtractTextPlugin('style.css'),
+    /*
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'vendors'
+    })
+    */
+    new webpack.optimize.UglifyJsPlugin({
+      compress: process.env.NODE_ENV === 'production'
+    })
+  ] 
+
 }
 
 module.exports = baseConfig;
