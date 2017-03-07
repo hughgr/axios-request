@@ -995,6 +995,20 @@ var util = {
   },
   stringify: function stringify(obj) {
     return JSON.stringify(obj);
+  },
+  safeGetData: function safeGetData(data, path) {
+    var list = path.split('.');
+    var result = data;
+    while (list.length > 0) {
+      var key = list.shift();
+      if (result[key] !== undefined) {
+        result = result[key];
+      } else {
+        result = undefined;
+        return;
+      }
+    }
+    return result;
   }
 };
 exports.default = util;
@@ -1204,7 +1218,7 @@ function _buildInterceptor(http) {
     if (error.code === 'ECONNABORTED') {
       http.toast('网络连接超时');
     } else {
-      var msg = error.response.data.message;
+      var msg = _helper2.default.safeGetData(error, 'response.data.message');
       msg ? http.toast(msg) : http.toast('服务器异常');
     }
     return Promise.reject(error);

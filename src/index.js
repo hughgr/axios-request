@@ -154,8 +154,9 @@ function _buildInterceptor (http) {
     console.error(error);
     if (error.code === 'ECONNABORTED') {
       http.toast('网络连接超时');
-    } else {
-      var msg = error.response.data.message;
+    } 
+    else {
+      var msg = util.safeGetData(error, 'response.data.message');
       msg ? http.toast(msg) : http.toast('服务器异常');
     }
     return Promise.reject(error);
