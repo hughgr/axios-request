@@ -35,7 +35,8 @@ var baseConfig = {
       }
     ]
   },
-  devtool: 'source-map',
+  //devtool: 'source-map',
+  devtool: 'cheap-module-source-map',
   plugins: [
     new ExtractTextPlugin('style.css'),
     /*
@@ -43,11 +44,18 @@ var baseConfig = {
       name: 'vendors'
     })
     */
+    /*
     new webpack.optimize.UglifyJsPlugin({
-      compress: process.env.NODE_ENV === 'production'
+      //compress: process.env.NODE_ENV === 'production',
     })
+    */
   ] 
-
 }
+if (process.env.NODE_ENV === 'production') {
+  baseConfig.plugins.push(new webpack.optimize.UglifyJsPlugin({
+    sourceMap: true
+  }));
+}
+
 
 module.exports = baseConfig;

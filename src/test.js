@@ -19,6 +19,9 @@ normalRequest.delete('/self/bitwise.html', {name:'cc'}).then((data, res) => {
 })
 
 console.info(process.env.NODE_ENV);
+showData();
+/*
 if (process.env.NODE_ENV === 'production') {
   showData();
 }
+*/
