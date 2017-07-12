@@ -4,7 +4,6 @@ var webpack = require('webpack');
 console.log(process.env.NODE_ENV);
 var baseConfig = {
   entry: {
-    test: './src/test',
     index: './src/index',
   },
   output: {

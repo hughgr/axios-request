@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "../build/";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 11);
+/******/ 	return __webpack_require__(__webpack_require__.s = 31);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -384,6 +384,107 @@ module.exports = {
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(process) {
+
+var utils = __webpack_require__(0);
+var normalizeHeaderName = __webpack_require__(25);
+
+var PROTECTION_PREFIX = /^\)\]\}',?\n/;
+var DEFAULT_CONTENT_TYPE = {
+  'Content-Type': 'application/x-www-form-urlencoded'
+};
+
+function setContentTypeIfUnset(headers, value) {
+  if (!utils.isUndefined(headers) && utils.isUndefined(headers['Content-Type'])) {
+    headers['Content-Type'] = value;
+  }
+}
+
+function getDefaultAdapter() {
+  var adapter;
+  if (typeof XMLHttpRequest !== 'undefined') {
+    // For browsers use XHR adapter
+    adapter = __webpack_require__(3);
+  } else if (typeof process !== 'undefined') {
+    // For node use HTTP adapter
+    adapter = __webpack_require__(3);
+  }
+  return adapter;
+}
+
+var defaults = {
+  adapter: getDefaultAdapter(),
+
+  transformRequest: [function transformRequest(data, headers) {
+    normalizeHeaderName(headers, 'Content-Type');
+    if (utils.isFormData(data) ||
+      utils.isArrayBuffer(data) ||
+      utils.isStream(data) ||
+      utils.isFile(data) ||
+      utils.isBlob(data)
+    ) {
+      return data;
+    }
+    if (utils.isArrayBufferView(data)) {
+      return data.buffer;
+    }
+    if (utils.isURLSearchParams(data)) {
+      setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');
+      return data.toString();
+    }
+    if (utils.isObject(data)) {
+      setContentTypeIfUnset(headers, 'application/json;charset=utf-8');
+      return JSON.stringify(data);
+    }
+    return data;
+  }],
+
+  transformResponse: [function transformResponse(data) {
+    /*eslint no-param-reassign:0*/
+    if (typeof data === 'string') {
+      data = data.replace(PROTECTION_PREFIX, '');
+      try {
+        data = JSON.parse(data);
+      } catch (e) { /* Ignore */ }
+    }
+    return data;
+  }],
+
+  timeout: 0,
+
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
+
+  maxContentLength: -1,
+
+  validateStatus: function validateStatus(status) {
+    return status >= 200 && status < 300;
+  }
+};
+
+defaults.headers = {
+  common: {
+    'Accept': 'application/json, text/plain, */*'
+  }
+};
+
+utils.forEach(['delete', 'get', 'head'], function forEachMehtodNoData(method) {
+  defaults.headers[method] = {};
+});
+
+utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
+  defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);
+});
+
+module.exports = defaults;
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -569,107 +670,6 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(process) {
-
-var utils = __webpack_require__(0);
-var normalizeHeaderName = __webpack_require__(26);
-
-var PROTECTION_PREFIX = /^\)\]\}',?\n/;
-var DEFAULT_CONTENT_TYPE = {
-  'Content-Type': 'application/x-www-form-urlencoded'
-};
-
-function setContentTypeIfUnset(headers, value) {
-  if (!utils.isUndefined(headers) && utils.isUndefined(headers['Content-Type'])) {
-    headers['Content-Type'] = value;
-  }
-}
-
-function getDefaultAdapter() {
-  var adapter;
-  if (typeof XMLHttpRequest !== 'undefined') {
-    // For browsers use XHR adapter
-    adapter = __webpack_require__(3);
-  } else if (typeof process !== 'undefined') {
-    // For node use HTTP adapter
-    adapter = __webpack_require__(3);
-  }
-  return adapter;
-}
-
-var defaults = {
-  adapter: getDefaultAdapter(),
-
-  transformRequest: [function transformRequest(data, headers) {
-    normalizeHeaderName(headers, 'Content-Type');
-    if (utils.isFormData(data) ||
-      utils.isArrayBuffer(data) ||
-      utils.isStream(data) ||
-      utils.isFile(data) ||
-      utils.isBlob(data)
-    ) {
-      return data;
-    }
-    if (utils.isArrayBufferView(data)) {
-      return data.buffer;
-    }
-    if (utils.isURLSearchParams(data)) {
-      setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');
-      return data.toString();
-    }
-    if (utils.isObject(data)) {
-      setContentTypeIfUnset(headers, 'application/json;charset=utf-8');
-      return JSON.stringify(data);
-    }
-    return data;
-  }],
-
-  transformResponse: [function transformResponse(data) {
-    /*eslint no-param-reassign:0*/
-    if (typeof data === 'string') {
-      data = data.replace(PROTECTION_PREFIX, '');
-      try {
-        data = JSON.parse(data);
-      } catch (e) { /* Ignore */ }
-    }
-    return data;
-  }],
-
-  timeout: 0,
-
-  xsrfCookieName: 'XSRF-TOKEN',
-  xsrfHeaderName: 'X-XSRF-TOKEN',
-
-  maxContentLength: -1,
-
-  validateStatus: function validateStatus(status) {
-    return status >= 200 && status < 300;
-  }
-};
-
-defaults.headers = {
-  common: {
-    'Accept': 'application/json, text/plain, */*'
-  }
-};
-
-utils.forEach(['delete', 'get', 'head'], function forEachMehtodNoData(method) {
-  defaults.headers[method] = {};
-});
-
-utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
-  defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);
-});
-
-module.exports = defaults;
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
-
-/***/ }),
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -677,12 +677,12 @@ module.exports = defaults;
 /* WEBPACK VAR INJECTION */(function(process) {
 
 var utils = __webpack_require__(0);
-var settle = __webpack_require__(18);
-var buildURL = __webpack_require__(21);
-var parseHeaders = __webpack_require__(27);
-var isURLSameOrigin = __webpack_require__(25);
+var settle = __webpack_require__(17);
+var buildURL = __webpack_require__(20);
+var parseHeaders = __webpack_require__(26);
+var isURLSameOrigin = __webpack_require__(24);
 var createError = __webpack_require__(6);
-var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(20);
+var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(19);
 
 module.exports = function xhrAdapter(config) {
   return new Promise(function dispatchXhrRequest(resolve, reject) {
@@ -778,7 +778,7 @@ module.exports = function xhrAdapter(config) {
     // This is only done if running in a standard browser environment.
     // Specifically not if we're in a web worker, or react-native.
     if (utils.isStandardBrowserEnv()) {
-      var cookies = __webpack_require__(23);
+      var cookies = __webpack_require__(22);
 
       // Add xsrf header
       var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
@@ -852,7 +852,7 @@ module.exports = function xhrAdapter(config) {
   });
 };
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
 
 /***/ }),
 /* 4 */
@@ -899,7 +899,7 @@ module.exports = function isCancel(value) {
 "use strict";
 
 
-var enhanceError = __webpack_require__(17);
+var enhanceError = __webpack_require__(16);
 
 /**
  * Create an Error with the specified message, config, error code, and response.
@@ -938,7 +938,7 @@ module.exports = function bind(fn, thisArg) {
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(12);
+module.exports = __webpack_require__(11);
 
 /***/ }),
 /* 9 */
@@ -1021,7 +1021,7 @@ exports.default = util;
 // This file can be required in Browserify and Node.js for automatic polyfill
 // To use it:  require('es6-promise/auto');
 
-module.exports = __webpack_require__(29).polyfill();
+module.exports = __webpack_require__(28).polyfill();
 
 
 /***/ }),
@@ -1031,226 +1031,10 @@ module.exports = __webpack_require__(29).polyfill();
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.normalRequest = exports.factory = undefined;
-
-var _axios = __webpack_require__(8);
-
-var _axios2 = _interopRequireDefault(_axios);
-
-var _helper = __webpack_require__(9);
-
-var _helper2 = _interopRequireDefault(_helper);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-// import 'babel-polyfill';
-__webpack_require__(10);
-
-/*
- * factory method to create http request client 
-*/
-function factory() {
-  var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-  if (config.toString() === '[object Object]') {
-    var defaluts = {
-      toast: _nope
-    };
-    config = _helper2.default.simpleMix(defaluts, config);
-    var ins = _axios2.default.create(config);
-    ins.toast = config.toast;
-    return _init(ins);
-  } else if (config.constructor === Function) {
-    return config.call(null, _axios2.default);
-  }
-}
-
-/*
- * empty function
- */
-function _nope() {}
-
-function _init(http) {
-  return _transAxios(_buildInterceptor(http));
-}
-
-/**
- * add & adapte some axios methods
- */
-function _transAxios(http) {
-  var _ref = [http.get, http.delete],
-      oldGet = _ref[0],
-      oldDelete = _ref[1];
-
-
-  http.cache = {};
-
-  //only handle the right param!
-  //use es5 so this refer to http
-  var _getCache = _helper2.default.proxy(function (namespace, key) {
-    if (namespace && key) {
-      try {
-        return this.cache[namespace][key];
-      } catch (e) {
-        console.info(e);
-        return null;
-      }
-    } else {
-      return this.cache[key];
-    }
-  }, http);
-
-  //only handle the right param!
-  var _setCache = _helper2.default.proxy(function (namespace, key, data) {
-    if (namespace && key) {
-      this.cache[namespace] = this.cache[namespace] || {};
-      return this.cache[namespace][key] = data;
-    } else {
-      return this.cache[key] = data;
-    }
-  }, http);
-
-  /**
-   * trans get method
-  */
-  http.get = function () {
-    var url = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-    var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var config = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-
-    if (data) {
-      config.params = data;
-    }
-    return oldGet(url, config);
-  };
-
-  /**
-   * trans delete method
-  */
-  http.delete = function () {
-    var url = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-    var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var config = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-
-    if (data) {
-      config.params = data;
-    }
-    return oldDelete(url, config);
-  };
-
-  /**
-   * add cacheGet method
-   * use http.cache as cache pool
-   */
-  http.cacheGet = function (url, data) {
-    var config = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-
-    var key = data ? url + _helper2.default.stringify(data) : url;
-    var defaluts = {
-      forceUpdate: false,
-      cacheNamespace: ''
-    };
-    //config = util.simpleMix(defaluts, config);
-    config = _helper2.default.partMix(config, defaluts);
-    var cacheObj = _getCache(config.cacheNamespace, key);
-    if (cacheObj && !config.forceUpdate) {
-      return new Promise(function (resolve, reject) {
-        resolve(cacheObj);
-      });
-    } else {
-      return http.get(url, data, config).then(function (data) {
-        return _setCache(config.cacheNamespace, key, data);
-      });
-    }
-  };
-  /**
-   * strongCacheGet use localstorage as cache pool
-   */
-  http.strongCacheGet = function (url, data, config) {
-    var key = data ? url + _helper2.default.stringify(data) : url;
-    return http.cacheGet(url, data, config).then(function (data) {
-      _helper2.default.cache(key, data);
-      return data;
-    });
-  };
-
-  return http;
-}
-
-/**
- * build custom interceptor, include request & response
- */
-function _buildInterceptor(http) {
-  http.customInterceptors = {
-    request: _nope,
-    response: _nope
-  };
-  http.customInterceptors.request = http.interceptors.request.use(function () {
-    var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-    var defaluts = {
-      params: {},
-      hideLoading: false
-    };
-    //config = util.simpleMix(defaluts, config);
-    config = _helper2.default.partMix(config, defaluts);
-    config.params.ts = new Date().getTime();
-    if (!config.hideLoading) http.toast('xhrShow');
-    return config;
-  });
-
-  http.customInterceptors.response = http.interceptors.response.use(function (res) {
-    //耦合代码
-    $.toastIsRuning = false;
-    var config = res.config;
-    if (!config.hideLoading) {
-      var timer = setTimeout(function () {
-        //请求成功之后，toastIsRuning已经被置成false,如果500ms之后，toastIsRunning被置为了true，则说明toast又弹了出来，此时不应该执行hide操作
-        !config.hideLoading && !$.toastIsRuning && http.toast('xhrHide');
-      }, 500);
-    }
-    return Promise.resolve(res.data);
-  }, function (error) {
-    console.error(error);
-    if (error.code === 'ECONNABORTED') {
-      http.toast('网络连接超时');
-    } else {
-      var msg = _helper2.default.safeGetData(error, 'response.data.message');
-      msg ? http.toast(msg) : http.toast('服务器异常');
-    }
-    return Promise.reject(error);
-  });
-  return http;
-}
-
-/**
- * finally, create normalRequest
- */
-var normalRequest = factory({
-  baseURL: '/',
-  timeout: 2000,
-  headers: {
-    "Content-type": "application/json; charset=UTF-8"
-  }
-});
-
-exports.factory = factory;
-exports.normalRequest = normalRequest;
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 var utils = __webpack_require__(0);
 var bind = __webpack_require__(7);
-var Axios = __webpack_require__(14);
-var defaults = __webpack_require__(2);
+var Axios = __webpack_require__(13);
+var defaults = __webpack_require__(1);
 
 /**
  * Create an instance of Axios
@@ -1284,14 +1068,14 @@ axios.create = function create(instanceConfig) {
 
 // Expose Cancel & CancelToken
 axios.Cancel = __webpack_require__(4);
-axios.CancelToken = __webpack_require__(13);
+axios.CancelToken = __webpack_require__(12);
 axios.isCancel = __webpack_require__(5);
 
 // Expose all/spread
 axios.all = function all(promises) {
   return Promise.all(promises);
 };
-axios.spread = __webpack_require__(28);
+axios.spread = __webpack_require__(27);
 
 module.exports = axios;
 
@@ -1300,7 +1084,7 @@ module.exports.default = axios;
 
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1364,18 +1148,18 @@ module.exports = CancelToken;
 
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var defaults = __webpack_require__(2);
+var defaults = __webpack_require__(1);
 var utils = __webpack_require__(0);
-var InterceptorManager = __webpack_require__(15);
-var dispatchRequest = __webpack_require__(16);
-var isAbsoluteURL = __webpack_require__(24);
-var combineURLs = __webpack_require__(22);
+var InterceptorManager = __webpack_require__(14);
+var dispatchRequest = __webpack_require__(15);
+var isAbsoluteURL = __webpack_require__(23);
+var combineURLs = __webpack_require__(21);
 
 /**
  * Create a new instance of Axios
@@ -1456,7 +1240,7 @@ module.exports = Axios;
 
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1515,16 +1299,16 @@ module.exports = InterceptorManager;
 
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var utils = __webpack_require__(0);
-var transformData = __webpack_require__(19);
+var transformData = __webpack_require__(18);
 var isCancel = __webpack_require__(5);
-var defaults = __webpack_require__(2);
+var defaults = __webpack_require__(1);
 
 /**
  * Throws a `Cancel` if cancellation has been requested.
@@ -1601,7 +1385,7 @@ module.exports = function dispatchRequest(config) {
 
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1627,7 +1411,7 @@ module.exports = function enhanceError(error, config, code, response) {
 
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1659,7 +1443,7 @@ module.exports = function settle(resolve, reject, response) {
 
 
 /***/ }),
-/* 19 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1686,7 +1470,7 @@ module.exports = function transformData(data, headers, fns) {
 
 
 /***/ }),
-/* 20 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1729,7 +1513,7 @@ module.exports = btoa;
 
 
 /***/ }),
-/* 21 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1804,7 +1588,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
 
 
 /***/ }),
-/* 22 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1823,7 +1607,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
 
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1883,7 +1667,7 @@ module.exports = (
 
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1904,7 +1688,7 @@ module.exports = function isAbsoluteURL(url) {
 
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1979,7 +1763,7 @@ module.exports = (
 
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1998,7 +1782,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
 
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2042,7 +1826,7 @@ module.exports = function parseHeaders(headers) {
 
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2076,7 +1860,7 @@ module.exports = function spread(callback) {
 
 
 /***/ }),
-/* 29 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(process, global) {var require;/*!
@@ -2215,7 +1999,7 @@ function flush() {
 function attemptVertx() {
   try {
     var r = require;
-    var vertx = __webpack_require__(31);
+    var vertx = __webpack_require__(30);
     vertxNext = vertx.runOnLoop || vertx.runOnContext;
     return useVertxTimer();
   } catch (e) {
@@ -3236,10 +3020,10 @@ return Promise;
 
 })));
 //# sourceMappingURL=es6-promise.map
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(30)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(29)))
 
 /***/ }),
-/* 30 */
+/* 29 */
 /***/ (function(module, exports) {
 
 var g;
@@ -3266,10 +3050,226 @@ module.exports = g;
 
 
 /***/ }),
-/* 31 */
+/* 30 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
+
+/***/ }),
+/* 31 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.normalRequest = exports.factory = undefined;
+
+var _axios = __webpack_require__(8);
+
+var _axios2 = _interopRequireDefault(_axios);
+
+var _helper = __webpack_require__(9);
+
+var _helper2 = _interopRequireDefault(_helper);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// import 'babel-polyfill';
+__webpack_require__(10);
+
+/*
+ * factory method to create http request client 
+*/
+function factory() {
+  var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+  if (config.toString() === '[object Object]') {
+    var defaluts = {
+      toast: _nope
+    };
+    config = _helper2.default.simpleMix(defaluts, config);
+    var ins = _axios2.default.create(config);
+    ins.toast = config.toast;
+    return _init(ins);
+  } else if (config.constructor === Function) {
+    return config.call(null, _axios2.default);
+  }
+}
+
+/*
+ * empty function
+ */
+function _nope() {}
+
+function _init(http) {
+  return _transAxios(_buildInterceptor(http));
+}
+
+/**
+ * add & adapte some axios methods
+ */
+function _transAxios(http) {
+  var _ref = [http.get, http.delete],
+      oldGet = _ref[0],
+      oldDelete = _ref[1];
+
+
+  http.cache = {};
+
+  //only handle the right param!
+  //use es5 so this refer to http
+  var _getCache = _helper2.default.proxy(function (namespace, key) {
+    if (namespace && key) {
+      try {
+        return this.cache[namespace][key];
+      } catch (e) {
+        console.info(e);
+        return null;
+      }
+    } else {
+      return this.cache[key];
+    }
+  }, http);
+
+  //only handle the right param!
+  var _setCache = _helper2.default.proxy(function (namespace, key, data) {
+    if (namespace && key) {
+      this.cache[namespace] = this.cache[namespace] || {};
+      return this.cache[namespace][key] = data;
+    } else {
+      return this.cache[key] = data;
+    }
+  }, http);
+
+  /**
+   * trans get method
+  */
+  http.get = function () {
+    var url = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+    var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var config = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+    if (data) {
+      config.params = data;
+    }
+    return oldGet(url, config);
+  };
+
+  /**
+   * trans delete method
+  */
+  http.delete = function () {
+    var url = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+    var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var config = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+    if (data) {
+      config.params = data;
+    }
+    return oldDelete(url, config);
+  };
+
+  /**
+   * add cacheGet method
+   * use http.cache as cache pool
+   */
+  http.cacheGet = function (url, data) {
+    var config = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+    var key = data ? url + _helper2.default.stringify(data) : url;
+    var defaluts = {
+      forceUpdate: false,
+      cacheNamespace: ''
+    };
+    //config = util.simpleMix(defaluts, config);
+    config = _helper2.default.partMix(config, defaluts);
+    var cacheObj = _getCache(config.cacheNamespace, key);
+    if (cacheObj && !config.forceUpdate) {
+      return new Promise(function (resolve, reject) {
+        resolve(cacheObj);
+      });
+    } else {
+      return http.get(url, data, config).then(function (data) {
+        return _setCache(config.cacheNamespace, key, data);
+      });
+    }
+  };
+  /**
+   * strongCacheGet use localstorage as cache pool
+   */
+  http.strongCacheGet = function (url, data, config) {
+    var key = data ? url + _helper2.default.stringify(data) : url;
+    return http.cacheGet(url, data, config).then(function (data) {
+      _helper2.default.cache(key, data);
+      return data;
+    });
+  };
+
+  return http;
+}
+
+/**
+ * build custom interceptor, include request & response
+ */
+function _buildInterceptor(http) {
+  http.customInterceptors = {
+    request: _nope,
+    response: _nope
+  };
+  http.customInterceptors.request = http.interceptors.request.use(function () {
+    var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+    var defaluts = {
+      params: {},
+      hideLoading: false
+    };
+    //config = util.simpleMix(defaluts, config);
+    config = _helper2.default.partMix(config, defaluts);
+    config.params.ts = new Date().getTime();
+    if (!config.hideLoading) http.toast('xhrShow');
+    return config;
+  });
+
+  http.customInterceptors.response = http.interceptors.response.use(function (res) {
+    //耦合代码
+    $.toastIsRuning = false;
+    var config = res.config;
+    if (!config.hideLoading) {
+      var timer = setTimeout(function () {
+        //请求成功之后，toastIsRuning已经被置成false,如果500ms之后，toastIsRunning被置为了true，则说明toast又弹了出来，此时不应该执行hide操作
+        !config.hideLoading && !$.toastIsRuning && http.toast('xhrHide');
+      }, 500);
+    }
+    return Promise.resolve(res.data);
+  }, function (error) {
+    console.error(error);
+    if (error.code === 'ECONNABORTED') {
+      http.toast('网络连接超时');
+    } else {
+      var msg = _helper2.default.safeGetData(error, 'response.data.message');
+      msg ? http.toast(msg) : http.toast('服务器异常');
+    }
+    return Promise.reject(error);
+  });
+  return http;
+}
+
+/**
+ * finally, create normalRequest
+ */
+var normalRequest = factory({
+  baseURL: '/',
+  timeout: 2000,
+  headers: {
+    "Content-type": "application/json; charset=UTF-8"
+  }
+});
+
+exports.factory = factory;
+exports.normalRequest = normalRequest;
 
 /***/ })
 /******/ ]);
